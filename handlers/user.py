@@ -28,9 +28,11 @@ async def recheck_subscription(callback: CallbackQuery):
     if is_subscribed:
         await callback.message.edit_text("✅ Obuna tasdiqlandi! Endi kino kodini yuboring.")
     else:
-        # Faqat obuna bo‘lmagan kanallarni ko‘rsatamiz
         keyboard = await subscribe_keyboard(callback.from_user.id, callback.bot)
-        await callback.message.edit_text("❌ Hali ham barcha kanallarga obuna bo‘lmagansiz.", reply_markup=keyboard)
+        await callback.message.edit_text(
+            "❌ Hali ham barcha kanallarga obuna bo‘lmagansiz.\nIltimos, quyidagilarga obuna bo‘ling:",
+            reply_markup=keyboard
+        )
 
 
 @router.message(F.text == "🎬 Kino kodi yuborish")

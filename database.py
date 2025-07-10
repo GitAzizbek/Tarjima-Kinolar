@@ -5,27 +5,45 @@ from config import MOVIE_JSON_PATH, USERS_JSON_PATH
 CHANNELS_PATH = "data/channels.json"
 
 def load_channels():
-    try:
-        with open(CHANNELS_PATH, "r") as f:
-            return json.load(f)
-    except:
+    """Saqlangan kanallar ro‘yxatini qaytaradi"""
+    if not os.path.exists(CHANNELS_PATH):
         return []
+    with open(CHANNELS_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
 
 def save_channels(channels):
-    with open(CHANNELS_PATH, "w") as f:
-        json.dump(channels, f, indent=4)
+    """Kanallar ro‘yxatini faylga saqlaydi"""
+    with open(CHANNELS_PATH, "w", encoding="utf-8") as f:
+        json.dump(channels, f, indent=2, ensure_ascii=False)
 
-def add_channel(username):
-    channels = load_channels()
-    if username not in channels:
-        channels.append(username)
-        save_channels(channels)
 
-def remove_channel(username):
+def add_channel(channel: dict):
+    """
+    Kanal qo‘shish (public/private) uchun.
+    channel: {
+        "type": "public" | "private",
+        "chat_id": "-100...",
+        "url": "https://t.me/+abc123" | "https://t.me/kanal_username",
+        "title": "Kanal nomi"
+    }
+    """
     channels = load_channels()
-    if username in channels:
-        channels.remove(username)
-        save_channels(channels)
+    if any(ch.get("chat_id") == channel["chat_id"] for ch in channels):
+        return False  # Avvaldan mavjud bo‘lsa, qo‘shmaydi
+
+    channels.append(channel)
+    save_channels(channels)
+    return True
+
+def remove_channel(chat_id: str) -> bool:
+    channels = load_channels()
+    new_channels = [ch for ch in channels if ch["chat_id"] != chat_id]
+    if len(new_channels) == len(channels):
+        return False  # hech nima o‘zgarmadi
+    save_channels(new_channels)
+    return True
+
 
 
 # === KINO BILAN ISHLASH ===

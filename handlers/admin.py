@@ -20,13 +20,33 @@ async def add_new_channel(message: types.Message):
     if not is_admin(message):
         return await message.answer("⛔ Siz admin emassiz!")
 
-    parts = message.text.strip().split()
-    if len(parts) != 2:
-        return await message.answer("Foydalanish: /addchannel @kanal_username")
+    parts = message.text.strip().split(maxsplit=4)
+    if len(parts) != 5:
+        return await message.answer(
+            "❗ Foydalanish:\n"
+            "<code>/addchannel type chat_id url title</code>\n\n"
+            "Masalan:\n"
+            "<code>/addchannel public @kanalim https://t.me/kanalim Kanal nomi</code>\n"
+            "<code>/addchannel private -1001234567890 https://t.me/+abc123 Yopiq kanal</code>",
+            parse_mode="HTML"
+        )
 
-    ch_username = parts[1]
-    add_channel(ch_username)
-    await message.answer(f"✅ Kanal qo‘shildi: {ch_username}")
+    ch_type, chat_id, url, title = parts[1], parts[2], parts[3], parts[4]
+
+    if ch_type not in ["public", "private"]:
+        return await message.answer("❌ Kanal turi noto‘g‘ri: 'public' yoki 'private' bo‘lishi kerak.")
+
+    success = add_channel({
+        "type": ch_type,
+        "chat_id": chat_id,
+        "url": url,
+        "title": title
+    })
+
+    if success:
+        return await message.answer(f"✅ Kanal qo‘shildi:\n<b>{title}</b>\n🔗 {url}", parse_mode="HTML")
+    else:
+        return await message.answer("⚠️ Bu kanal allaqachon mavjud yoki xatolik yuz berdi.")
 
 @router.message(Command("removechannel"))
 async def remove_channel_cmd(message: types.Message):
@@ -35,11 +55,15 @@ async def remove_channel_cmd(message: types.Message):
 
     parts = message.text.strip().split()
     if len(parts) != 2:
-        return await message.answer("Foydalanish: /removechannel @kanal_username")
+        return await message.answer("❗ Foydalanish: /removechannel chat_id")
 
-    ch_username = parts[1]
-    remove_channel(ch_username)
-    await message.answer(f"🗑 Kanal o‘chirildi: {ch_username}")
+    chat_id = parts[1]
+    removed = remove_channel(chat_id)
+
+    if removed:
+        await message.answer(f"🗑 Kanal o‘chirildi: <code>{chat_id}</code>", parse_mode="HTML")
+    else:
+        await message.answer("❌ Kanal topilmadi yoki allaqachon o‘chirilgan.")
 
 @router.message(Command("channels"))
 async def list_channels(message: types.Message):
@@ -48,11 +72,14 @@ async def list_channels(message: types.Message):
 
     channels = load_channels()
     if not channels:
-        return await message.answer("📭 Obuna kanallar hali yo‘q.")
+        return await message.answer("📭 Hozircha hech qanday kanal mavjud emas.")
+
     text = "📢 Obuna talab qilinadigan kanallar:\n\n"
-    for ch in channels:
-        text += f"• {ch}\n"
-    await message.answer(text)
+    for idx, ch in enumerate(channels, start=1):
+        text += f"{idx}. {ch['title']} — <code>{ch['chat_id']}</code>\n"
+
+    await message.answer(text, parse_mode="HTML")
+
 
 
 @router.message(F.text == "📊 Statistika")

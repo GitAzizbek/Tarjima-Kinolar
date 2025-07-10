@@ -1,25 +1,31 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from config import CHANNEL_USERNAME
+from aiogram import Bot
 from database import load_channels
 
-async def subscribe_keyboard(user_id, bot):
+async def subscribe_keyboard(user_id: int, bot: Bot):
     channels = load_channels()
     buttons = []
-
-    index = 1  # tartib raqami uchun
+    index = 1  # Tartib raqami
 
     for ch in channels:
         try:
-            member = await bot.get_chat_member(chat_id=ch, user_id=user_id)
+            member = await bot.get_chat_member(chat_id=ch["chat_id"], user_id=user_id)
             if member.status not in ["member", "administrator", "creator"]:
-                # Faqat obuna bo‘lmaganlarni raqam bilan tugmaga qo‘shamiz
-                btn_text = f"{index} - kanal"
-                buttons.append([InlineKeyboardButton(text=btn_text, url=f"https://t.me/{ch.lstrip('@')}")])
+                btn_text = f"{index} - {ch['title']}"
+                buttons.append([
+                    InlineKeyboardButton(text=btn_text, url=ch["url"])
+                ])
                 index += 1
-        except Exception:
+        except Exception as e:
+            print(f"⚠️ Xatolik kanal bilan: {ch.get('title')} — {e}")
             continue
 
-    buttons.append([InlineKeyboardButton(text="✅ Obuna bo‘ldim", callback_data="check_subs")])
+    # Tugma bo‘sh bo‘lsa ham "Obuna bo‘ldim" tugmasi qo‘shiladi
+    buttons.append([
+        InlineKeyboardButton(text="✅ Obuna bo‘ldim", callback_data="check_subs")
+    ])
+
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
