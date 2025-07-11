@@ -7,6 +7,6 @@ router = Router()
 async def handle_join_request(event: types.ChatJoinRequest):
     add_pending_request(user_id=event.from_user.id, chat_id=event.chat.id)
     try:
-        await event.answer(approved=False)  # Yoki False — faqat so'rov yuborish uchun
+        await event.answer(approved=False, text="✅ So‘rovingiz qabul qilindi! Tez orada tasdiqlanadi.")  # Yoki False — faqat so'rov yuborish uchun
     except Exception as e:
         print(f"❌ Join requestda xatolik: {e}")

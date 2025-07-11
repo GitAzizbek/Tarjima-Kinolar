@@ -25,7 +25,6 @@ def is_user_pending(user_id, chat_id):
     data = load_pending()
     return any(entry["user_id"] == user_id and entry["chat_id"] == chat_id for entry in data)
 
-
 def load_channels():
     """Saqlangan kanallar ro‘yxatini qaytaradi"""
     if not os.path.exists(CHANNELS_PATH):
