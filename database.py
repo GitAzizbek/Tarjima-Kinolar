@@ -3,6 +3,28 @@ import os
 from config import MOVIE_JSON_PATH, USERS_JSON_PATH
 
 CHANNELS_PATH = "data/channels.json"
+PENDING_FILE = "data/pending_requests.json"
+
+def load_pending():
+    if not os.path.exists(PENDING_FILE):
+        return []
+    with open(PENDING_FILE, "r") as f:
+        return json.load(f)
+
+def save_pending(data):
+    with open(PENDING_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_pending_request(user_id, chat_id):
+    data = load_pending()
+    if not any(entry["user_id"] == user_id and entry["chat_id"] == chat_id for entry in data):
+        data.append({"user_id": user_id, "chat_id": chat_id})
+        save_pending(data)
+
+def is_user_pending(user_id, chat_id):
+    data = load_pending()
+    return any(entry["user_id"] == user_id and entry["chat_id"] == chat_id for entry in data)
+
 
 def load_channels():
     """Saqlangan kanallar ro‘yxatini qaytaradi"""
