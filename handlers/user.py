@@ -7,6 +7,7 @@ from database import get_movie_by_code
 from keyboards.inline import subscribe_keyboard
 from aiogram import F
 from aiogram.types import CallbackQuery
+from aiogram.exceptions import TelegramBadRequest
 
 router = Router()
 
@@ -26,13 +27,22 @@ async def recheck_subscription(callback: CallbackQuery):
     is_subscribed = await check_subscription(callback.from_user.id, callback.bot)
 
     if is_subscribed:
-        await callback.message.edit_text("✅ Obuna tasdiqlandi! Endi kino kodini yuboring.")
+        try:
+            await callback.message.edit_text("✅ Obuna tasdiqlandi! Endi kino kodini yuboring.")
+        except TelegramBadRequest as e:
+            if "message is not modified" not in str(e):
+                raise e
     else:
         keyboard = await subscribe_keyboard(callback.from_user.id, callback.bot)
-        await callback.message.edit_text(
-            "❌ Hali ham barcha kanallarga obuna bo‘lmagansiz.\nIltimos, quyidagilarga obuna bo‘ling:",
-            reply_markup=keyboard
-        )
+        try:
+            await callback.message.edit_text(
+                "❌ Hali ham barcha kanallarga obuna bo‘lmagansiz.\nIltimos, quyidagilarga obuna bo‘ling:",
+                reply_markup=keyboard
+            )
+        except TelegramBadRequest as e:
+            if "message is not modified" not in str(e):
+                raise e
+
 
 
 @router.message(F.text == "🎬 Kino kodi yuborish")
