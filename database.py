@@ -5,6 +5,14 @@ from config import MOVIE_JSON_PATH, USERS_JSON_PATH
 CHANNELS_PATH = "data/channels.json"
 PENDING_FILE = "data/pending_requests.json"
 
+import shutil
+
+def backup_movies():
+    try:
+        shutil.copy(MOVIE_JSON_PATH, MOVIE_JSON_PATH.with_name("movies_backup.json"))
+    except Exception as e:
+        print(f"⚠️ Backupda xatolik: {e}")
+
 def load_pending():
     if not os.path.exists(PENDING_FILE):
         return []
@@ -72,14 +80,23 @@ def load_movies():
     if not os.path.exists(MOVIE_JSON_PATH):
         with open(MOVIE_JSON_PATH, "w") as f:
             json.dump({}, f)
-    with open(MOVIE_JSON_PATH, "r") as f:
-        return json.load(f)
+        return {}
+
+    try:
+        with open(MOVIE_JSON_PATH, "r") as f:
+            return json.load(f)
+    except json.decoder.JSONDecodeError:
+        print("⚠️ movies.json fayli buzilgan! Bo‘sh dict qaytaryapti.")
+        return {}
 
 
 def save_movie(code, data):
     code = code.upper()
     movies = load_movies()
     movies[code] = data
+
+    backup_movies()
+
     with open(MOVIE_JSON_PATH, "w") as f:
         json.dump(movies, f, indent=4)
 
