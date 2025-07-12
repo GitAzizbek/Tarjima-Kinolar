@@ -81,15 +81,18 @@ async def list_channels(message: types.Message):
     await message.answer(text, parse_mode="HTML")
 
 
+from utils.backup import backup_file
+
 def save_movie(code, data):
     code = code.upper()
     movies = load_movies()
     movies[code] = data
 
-    backup_movies()
+    backup_file(MOVIE_JSON_PATH)  # Har saqlashda nusxasini oladi
 
     with open(MOVIE_JSON_PATH, "w") as f:
         json.dump(movies, f, indent=4)
+
 
 
 @router.message(F.text == "📊 Statistika")
