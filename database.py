@@ -89,18 +89,6 @@ def load_movies():
         print("⚠️ movies.json fayli buzilgan! Bo‘sh dict qaytaryapti.")
         return {}
 
-
-def save_movie(code, data):
-    code = code.upper()
-    movies = load_movies()
-    movies[code] = data
-
-    backup_movies()
-
-    with open(MOVIE_JSON_PATH, "w") as f:
-        json.dump(movies, f, indent=4)
-
-
 def get_movie_by_code(code):
     code = code.upper()
     movies = load_movies()
